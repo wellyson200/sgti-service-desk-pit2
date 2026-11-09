@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>SGTI — Gestão de Chamados (MVC)</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; color: #0f172a; margin: 0; padding: 0; }
+    header { background: #1e3a8a; color: white; padding: 15px 20px; text-align: center; }
+    .container { max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 5px; }
+    button { background: #059669; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+    button:hover { background: #047857; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f1f5f9; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SGTI — Service Desk (Wellyson Rodrigues)</h1>
+  </header>
+  <div class="container">
+    <h2>Abrir Novo Chamado</h2>
+    <form id="form-chamado" onsubmit="salvarChamado(event)">
+      <label>Tag de Patrimônio (Ex: PAT-00891)</label>
+      <input type="text" id="tag" required>
+      
+      <label>Prioridade</label>
+      <select id="prio">
+        <option value="P1 (2h)">P1 - Crítica (2h)</option>
+        <option value="P3 (8h)" selected>P3 - Média (8h)</option>
+      </select>
+
+      <label>Descrição do Problema</label>
+      <textarea id="desc" rows="3" required></textarea>
+      
+      <button type="submit" id="btn-submit">Registrar Chamado</button>
+    </form>
+
+    <h2>Fila de Chamados</h2>
+    <table>
+      <thead>
+        <tr><th>Protocolo</th><th>Patrimônio</th><th>Prioridade</th><th>Status</th></tr>
+      </thead>
+      <tbody id="tabela">
+        <tr><td>#CH-101</td><td>PAT-00891</td><td>P1 (2h)</td><td>Em Atendimento</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let count = 102;
+    function salvarChamado(e) {
+      e.preventDefault();
+      document.getElementById('btn-submit').disabled = true;
+      document.getElementById('btn-submit').innerText = "Processando...";
+      
+      setTimeout(() => {
+        const tag = document.getElementById('tag').value;
+        const prio = document.getElementById('prio').value;
+        const tbody = document.getElementById('tabela');
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>#CH-${count++}</td><td>${tag}</td><td>${prio}</td><td>Aberto</td>`;
+        tbody.prepend(tr);
+        
+        document.getElementById('form-chamado').reset();
+        document.getElementById('btn-submit').disabled = false;
+        document.getElementById('btn-submit').innerText = "Registrar Chamado";
+        alert("Chamado registrado com sucesso!");
+      }, 500);
+    }
+  </script>
+</body>
+</html>
