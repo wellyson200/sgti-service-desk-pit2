@@ -10,9 +10,12 @@
     input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 5px; }
     button { background: #059669; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
     button:hover { background: #047857; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .btn-encerrar { background: #dc2626; padding: 6px 12px; font-size: 13px; margin: 0; }
+    .btn-encerrar:hover { background: #991b1b; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
     th { background: #f1f5f9; }
+    .filtros { margin-top: 30px; padding: 15px; background: #f1f5f9; border-radius: 5px; border: 1px solid #cbd5e1; }
   </style>
 </head>
 <body>
@@ -27,8 +30,8 @@
       
       <label>Prioridade</label>
       <select id="prio">
-        <option value="P1 (2h)">P1 - Crítica (2h)</option>
-        <option value="P3 (8h)" selected>P3 - Média (8h)</option>
+        <option value="P1 - Crítica (2h)">P1 - Crítica (2h)</option>
+        <option value="P3 - Média (8h)" selected>P3 - Média (8h)</option>
       </select>
 
       <label>Descrição do Problema</label>
@@ -37,39 +40,85 @@
       <button type="submit" id="btn-submit">Registrar Chamado</button>
     </form>
 
-    <h2>Fila de Chamados</h2>
+    <div class="filtros">
+      <strong>Consultar Fila de Chamados: </strong>
+      <select id="filtro-status" onchange="renderizarTabela()" style="width: auto; display: inline-block; padding: 5px;">
+        <option value="TODOS">Todos os Status</option>
+        <option value="ABERTO">Em Atendimento</option>
+        <option value="CONCLUIDO">Concluídos</option>
+      </select>
+    </div>
+
     <table>
       <thead>
-        <tr><th>Protocolo</th><th>Patrimônio</th><th>Prioridade</th><th>Status</th></tr>
+        <tr><th>Protocolo</th><th>Patrimônio</th><th>Prioridade</th><th>Status</th><th>Ações</th></tr>
       </thead>
       <tbody id="tabela">
-        <tr><td>#CH-101</td><td>PAT-00891</td><td>P1 (2h)</td><td>Em Atendimento</td></tr>
       </tbody>
     </table>
   </div>
 
   <script>
+    let chamados = [
+      { id: 101, tag: "PAT-00891", prio: "P1 - Crítica (2h)", status: "ABERTO", solucao: "" }
+    ];
     let count = 102;
+
+    function renderizarTabela() {
+      const filtro = document.getElementById('filtro-status').value;
+      const tbody = document.getElementById('tabela');
+      tbody.innerHTML = '';
+
+      chamados.forEach((c, index) => {
+        if (filtro === "TODOS" || c.status === filtro) {
+          const tr = document.createElement('tr');
+          let botaoAcao = c.status === 'ABERTO' 
+            ? `<button class="btn-encerrar" onclick="encerrarChamado(${index})">Encerrar Chamado</button>` 
+            : `<small style="color:#059669;">✔ ${c.solucao}</small>`;
+            
+          tr.innerHTML = `<td>#CH-2026-${c.id}</td><td>${c.tag}</td><td>${c.prio}</td><td><strong>${c.status}</strong></td><td>${botaoAcao}</td>`;
+          tbody.appendChild(tr);
+        }
+      });
+    }
+
     function salvarChamado(e) {
       e.preventDefault();
       document.getElementById('btn-submit').disabled = true;
       document.getElementById('btn-submit').innerText = "Processando...";
       
       setTimeout(() => {
-        const tag = document.getElementById('tag').value;
+        const tag = document.getElementById('tag').value.toUpperCase();
         const prio = document.getElementById('prio').value;
-        const tbody = document.getElementById('tabela');
         
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>#CH-${count++}</td><td>${tag}</td><td>${prio}</td><td>Aberto</td>`;
-        tbody.prepend(tr);
+        chamados.unshift({ id: count++, tag: tag, prio: prio, status: "ABERTO", solucao: "" });
         
         document.getElementById('form-chamado').reset();
         document.getElementById('btn-submit').disabled = false;
         document.getElementById('btn-submit').innerText = "Registrar Chamado";
+        
+        document.getElementById('filtro-status').value = "TODOS";
+        renderizarTabela();
         alert("Chamado registrado com sucesso!");
       }, 500);
     }
+
+    function encerrarChamado(index) {
+      const solucao = prompt("Informe a Solução Técnica aplicada (Mínimo de 15 caracteres):");
+      if (solucao === null) return; 
+      
+      if (solucao.trim().length < 15) {
+        alert("Bloqueio de Regra (BUG-02): Não é permitido encerrar o chamado sem detalhar a Solução Técnica (mín. 15 caracteres).");
+        return;
+      }
+      
+      chamados[index].status = "CONCLUIDO";
+      chamados[index].solucao = solucao.trim();
+      renderizarTabela();
+      alert("Chamado encerrado com sucesso e registrado no Histórico!");
+    }
+
+    renderizarTabela();
   </script>
 </body>
 </html>
